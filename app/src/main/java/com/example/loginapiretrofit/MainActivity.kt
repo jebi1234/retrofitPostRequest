@@ -1,7 +1,12 @@
 package com.example.loginapiretrofit
 
+import android.content.ContentValues.TAG
+import android.content.Intent
+import android.net.DhcpInfo
+import android.net.wifi.WifiManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.format.Formatter.formatIpAddress
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -12,6 +17,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.commons.codec.binary.Base64
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.SocketException
+import java.nio.ByteOrder
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     var Edittext: EditText? = null
 
     var Textview:TextView? = null
+    var Textvie:TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         Edittext = findViewById<EditText>(R.id.number)
 
         Textview = findViewById<TextView>(R.id.textView)
+        Textvie = findViewById<TextView>(R.id.textView2)
 
         val Submit = findViewById<Button>(R.id.button)
 
@@ -37,9 +50,33 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this,"Please enter your MobileNumber",Toast.LENGTH_SHORT).show()
             }
             login()
+            val ipsddress:String? =  getLocalIpAddress()
+            Toast.makeText(this,ipsddress.toString(),Toast.LENGTH_LONG).show()
+            intent = Intent(this, MainActivity2::class.java)
+            startActivity(intent)
+
         }
 
     }
+    fun getLocalIpAddress(): String? {
+        try {
+            val en = NetworkInterface.getNetworkInterfaces()
+            while (en.hasMoreElements()) {
+                val intf = en.nextElement()
+                val enumIpAddr: Enumeration<InetAddress> = intf.inetAddresses
+                while (enumIpAddr.hasMoreElements()) {
+                    val inetAddress: InetAddress = enumIpAddr.nextElement()
+                    if (!inetAddress.isLoopbackAddress() && inetAddress is Inet4Address) {
+                        return inetAddress.getHostAddress()
+                    }
+                }
+            }
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+        return null
+    }
+
     private fun login() {
 
         val request =
